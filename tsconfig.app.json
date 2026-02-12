@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    
+    /* 🟢 CHANGE THESE THREE LINES */
+    "noEmit": false,
+    "emitDeclarationOnly": true,
+    "declaration": true,
+    
+    "declarationMap": true,
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true, 
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+
+    /* React & Types */
+    "jsx": "react-jsx",
+    "types": ["vite/client"]
+  },
+  "include": ["src"]
+}
