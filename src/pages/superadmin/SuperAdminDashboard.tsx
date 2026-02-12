@@ -30,8 +30,7 @@ export const SuperAdminDashboard = () => {
     dispatch(fetchCategoryTree());
   }, [dispatch]);
 
-  // --- ANALYTICS DERIVATION ---
-  const adminCount = users.filter((u: any) => u.role === "admin" || u.role === "superadmin").length;
+  
   const pendingTasks = tasks.filter((t: any) => t.status === TaskStatus.PENDING).length;
   const acknowledgedTasks = tasks.filter((t: any) => t.status === TaskStatus.ACKNOWLEDGED).length;
   const completedTasks = tasks.filter((t: any) => t.status === TaskStatus.COMPLETED).length;

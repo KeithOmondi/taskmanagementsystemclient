@@ -20,9 +20,9 @@ import {
   TaskPriority,
 } from "../../store/slices/superAdminSlice";
 import { fetchUsers } from "../../store/slices/userSlice";
-import { fetchCategoryTree } from "../../store/slices/categoriesSlice";
 
 import SuperAdminAddCategoryModal from "./SuperAdminAddCategoryModal";
+import { fetchCategoryTree } from "../../store/slices/categoriesSlice";
 
 /* ============================================================
     GROUPING & SORTING LOGIC

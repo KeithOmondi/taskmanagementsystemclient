@@ -2,10 +2,8 @@ import React, { useState, useEffect } from "react";
 import { X, Check, ArrowLeft, Save } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useAppDispatch } from "../../store/hooks";
-import {
-  createCategory,
-  fetchCategoryTree,
-} from "../../store/slices/categoriesSlice";
+import { createCategory, fetchCategoryTree } from "../../store/slices/categoriesSlice";
+
 
 interface Props {
   isOpen: boolean;
