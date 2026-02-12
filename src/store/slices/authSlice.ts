@@ -2,16 +2,17 @@ import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/tool
 import api from "../../api/axios";
 
 /* =====================================
-   INTERFACES
+    INTERFACES
 ===================================== */
-interface User {
+// 🟢 Exported to allow store.ts and hooks.ts to name these types
+export interface User {
   id: string;
   role: string;
-  name: string; // always populated
-  pjNumber?: string; // optional fallback
+  name: string; 
+  pjNumber?: string;
 }
 
-interface AuthState {
+export interface AuthState {
   user: User | null;
   loading: boolean;
   error: string | null;
@@ -30,90 +31,98 @@ const initialState: AuthState = {
 };
 
 /* =====================================
-   ASYNC THUNKS
+    ASYNC THUNKS
 ===================================== */
 
-// Login / Request OTP
-export const loginRequest = createAsyncThunk(
-  "auth/loginRequest",
-  async (pjNumber: string, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post("/auth/login", { pjNumber });
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || "Login failed");
-    }
+/**
+ * Login / Request OTP
+ */
+export const loginRequest = createAsyncThunk<
+  { message: string }, 
+  string, 
+  { rejectValue: string }
+>("auth/loginRequest", async (pjNumber, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post("/auth/login", { pjNumber });
+    return data;
+  } catch (err: any) {
+    return rejectWithValue(err.response?.data?.message || "Login failed");
   }
-);
+});
 
-// Resend OTP
-export const resendOtpRequest = createAsyncThunk(
-  "auth/resendOtp",
-  async (pjNumber: string, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post("/auth/resend-otp", { pjNumber });
-      return data;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || "Failed to resend OTP");
-    }
+/**
+ * Resend OTP
+ */
+export const resendOtpRequest = createAsyncThunk<
+  { message: string }, 
+  string, 
+  { rejectValue: string }
+>("auth/resendOtp", async (pjNumber, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post("/auth/resend-otp", { pjNumber });
+    return data;
+  } catch (err: any) {
+    return rejectWithValue(err.response?.data?.message || "Failed to resend OTP");
   }
-);
+});
 
-// Verify OTP
-export const verifyOtpRequest = createAsyncThunk(
-  "auth/verifyOtp",
-  async (otp: string, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post("/auth/verify-otp", { otp });
-      const user: User = {
-        ...data.user,
-        name: data.user.name || data.user.pjNumber || data.user.role || "User",
-      };
-      return user;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || "Invalid OTP");
-    }
+/**
+ * Verify OTP
+ */
+export const verifyOtpRequest = createAsyncThunk<
+  User, 
+  string, 
+  { rejectValue: string }
+>("auth/verifyOtp", async (otp, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post("/auth/verify-otp", { otp });
+    const user: User = {
+      ...data.user,
+      name: data.user.name || data.user.pjNumber || data.user.role || "User",
+    };
+    return user;
+  } catch (err: any) {
+    return rejectWithValue(err.response?.data?.message || "Invalid OTP");
   }
-);
+});
 
-// Refresh session
-// authSlice.ts - Inside ASYNC THUNKS section
-export const refreshSession = createAsyncThunk(
-  "auth/refresh",
-  async (_, { rejectWithValue }) => {
-    try {
-      // ✅ CHANGED FROM .get TO .post TO MATCH BACKEND
-      const { data } = await api.post("/auth/refresh"); 
-      
-      const user: User = {
-        ...data.user,
-        name: data.user.name || data.user.pjNumber || data.user.role || "User",
-      };
-      return user;
-    } catch (err: any) {
-      // If we get a 404 here, it's definitely a route naming issue
-      if (err.response?.status === 404) {
-        console.error("Endpoint not found. Check if BASE_URL includes /api/v1");
-      }
-      return rejectWithValue(null);
-    }
+/**
+ * Refresh Session
+ */
+export const refreshSession = createAsyncThunk<
+  User, 
+  void, 
+  { rejectValue: null }
+>("auth/refresh", async (_, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post("/auth/refresh"); 
+    const user: User = {
+      ...data.user,
+      name: data.user.name || data.user.pjNumber || data.user.role || "User",
+    };
+    return user;
+  } catch (err: any) {
+    return rejectWithValue(null);
   }
-);
+});
 
-// Logout
-export const logoutRequest = createAsyncThunk(
-  "auth/logout",
-  async (_, { rejectWithValue }) => {
-    try {
-      await api.post("/auth/logout");
-    } catch (err: any) {
-      return rejectWithValue("Logout failed");
-    }
+/**
+ * Logout
+ */
+export const logoutRequest = createAsyncThunk<
+  void, 
+  void, 
+  { rejectValue: string }
+>("auth/logout", async (_, { rejectWithValue }) => {
+  try {
+    await api.post("/auth/logout");
+  } catch (err: any) {
+    return rejectWithValue("Logout failed");
   }
-);
+});
 
 /* =====================================
-   SLICE
+    SLICE
 ===================================== */
 const authSlice = createSlice({
   name: "auth",

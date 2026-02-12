@@ -2,22 +2,33 @@ import { createSlice, createAsyncThunk, type PayloadAction, isAnyOf } from "@red
 import api from "../../api/axios";
 
 /* =====================================
-    ENUMS & TYPES
+    ENUMS & TYPES (REFACTORED)
 ===================================== */
-export enum TaskStatus {
-  PENDING = "Pending",
-  ACKNOWLEDGED = "Acknowledged",
-  COMPLETED = "Completed",
-  ON_HOLD = "On Hold",
-  ARCHIVED = "Archived",
-}
 
-export enum TaskPriority {
-  LOW = "Low",
-  MEDIUM = "Medium",
-  HIGH = "High",
-  URGENT = "Urgent",
-}
+// 1. Define the object with 'as const'
+export const TaskStatus = {
+  PENDING: "Pending",
+  ACKNOWLEDGED: "Acknowledged",
+  COMPLETED: "Completed",
+  ON_HOLD: "On Hold",
+  ARCHIVED: "Archived",
+} as const;
+
+// 2. Create a type from that object
+export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
+
+export const TaskPriority = {
+  LOW: "Low",
+  MEDIUM: "Medium",
+  HIGH: "High",
+  URGENT: "Urgent",
+} as const;
+
+export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority];
+
+/* =====================================
+    REST OF THE CODE (UNCHANGED)
+===================================== */
 
 interface UserReference {
   _id: string;
@@ -29,11 +40,11 @@ export interface Task {
   _id: string;
   title: string;
   description?: string;
-  status: TaskStatus;
+  status: TaskStatus; // Still works perfectly
   priority: TaskPriority;
   assignedTo: UserReference[];
   startDate?: string;
-  dueDate: string; // Aligned with Backend
+  dueDate: string;
   acknowledgedAt?: string;
   completedAt?: string;
   category?: { _id: string; name: string };

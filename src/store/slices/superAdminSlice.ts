@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import api from "../../api/axios";
 
 // ---------------- CONSTANTS ---------------- //
@@ -49,7 +53,8 @@ export interface ITask {
   };
 }
 
-interface SuperAdminTaskState {
+// 🟢 Add 'export' here so the Store can "name" this state
+export interface SuperAdminTaskState {
   tasks: ITask[];
   loading: boolean;
   error: string | null;
@@ -72,9 +77,11 @@ export const fetchAllTasks = createAsyncThunk<
 >("superAdmin/fetchAllTasks", async (filters, { rejectWithValue }) => {
   try {
     const res = await api.get("/superadmin/tasks", { params: filters || {} });
-    return res.data; 
+    return res.data;
   } catch (err: any) {
-    return rejectWithValue(err.response?.data?.message || "Failed to fetch registry");
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to fetch registry",
+    );
   }
 });
 
@@ -99,7 +106,10 @@ export const updateTask = createAsyncThunk<
   { rejectValue: string }
 >("superAdmin/updateTask", async ({ id, updates }, { rejectWithValue }) => {
   try {
-    const config = updates instanceof FormData ? { headers: { "Content-Type": "multipart/form-data" } } : {};
+    const config =
+      updates instanceof FormData
+        ? { headers: { "Content-Type": "multipart/form-data" } }
+        : {};
     const res = await api.put(`/superadmin/tasks/${id}`, updates, config);
     return res.data.data;
   } catch (err: any) {
@@ -111,17 +121,23 @@ export const reviewTask = createAsyncThunk<
   ITask,
   { id: string; action: "APPROVE" | "REJECT"; feedback?: string },
   { rejectValue: string }
->("superAdmin/reviewTask", async ({ id, action, feedback }, { rejectWithValue }) => {
-  try {
-    const res = await api.patch(`/superadmin/tasks/review/${id}`, { action, feedback });
-    return res.data.data;
-  } catch (err: any) {
-    return rejectWithValue(err.response?.data?.message || "Review failed");
-  }
-});
+>(
+  "superAdmin/reviewTask",
+  async ({ id, action, feedback }, { rejectWithValue }) => {
+    try {
+      const res = await api.patch(`/superadmin/tasks/review/${id}`, {
+        action,
+        feedback,
+      });
+      return res.data.data;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data?.message || "Review failed");
+    }
+  },
+);
 
 export const deleteTask = createAsyncThunk<
-  string, 
+  string,
   string,
   { rejectValue: string }
 >("superAdmin/deleteTask", async (id, { rejectWithValue }) => {
@@ -140,54 +156,79 @@ const superAdminSlice = createSlice({
   initialState,
   reducers: {
     resetSuperAdminTasks: () => initialState,
-    clearError: (state: SuperAdminTaskState) => { state.error = null; }
+    clearError: (state: SuperAdminTaskState) => {
+      state.error = null;
+    },
   },
   extraReducers: (builder) => {
     builder
-      /* STEP 1: ALL Specific addCase calls 
-      */
-      .addCase(fetchAllTasks.pending, (state: SuperAdminTaskState) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchAllTasks.fulfilled, (state: SuperAdminTaskState, action: PayloadAction<{ data: ITask[]; total: number }>) => {
-        state.loading = false;
-        const payloadData = action.payload?.data;
-        state.tasks = Array.isArray(payloadData) ? payloadData : [];
-        state.total = action.payload?.total || 0;
-      })
-      .addCase(createTask.fulfilled, (state: SuperAdminTaskState, action: PayloadAction<ITask>) => {
-        state.loading = false;
-        if (action.payload && action.payload._id) {
-          state.tasks.unshift(action.payload);
-          state.total += 1;
-        }
-      })
-      .addCase(deleteTask.fulfilled, (state: SuperAdminTaskState, action: PayloadAction<string>) => {
-        state.tasks = state.tasks.filter((t) => t._id !== action.payload);
-        state.total -= 1;
-      })
-      .addCase(updateTask.fulfilled, (state: SuperAdminTaskState, action: PayloadAction<ITask>) => {
-        const index = state.tasks.findIndex((t) => t._id === action.payload._id);
-        if (index !== -1) {
-          state.tasks[index] = action.payload;
-        }
-      })
-      .addCase(reviewTask.fulfilled, (state: SuperAdminTaskState, action: PayloadAction<ITask>) => {
-        const index = state.tasks.findIndex((t) => t._id === action.payload._id);
-        if (index !== -1) {
-          state.tasks[index] = action.payload;
-        }
-      })
+      /* STEP 1: ALL Specific addCase calls
+       */
+      .addCase(fetchAllTasks.pending, (state) => { // TS already knows 'state' is SuperAdminTaskState
+      state.loading = true;
+      state.error = null;
+    })
+      .addCase(
+        fetchAllTasks.fulfilled,
+        (
+          state: SuperAdminTaskState,
+          action: PayloadAction<{ data: ITask[]; total: number }>,
+        ) => {
+          state.loading = false;
+          const payloadData = action.payload?.data;
+          state.tasks = Array.isArray(payloadData) ? payloadData : [];
+          state.total = action.payload?.total || 0;
+        },
+      )
+      .addCase(
+        createTask.fulfilled,
+        (state: SuperAdminTaskState, action: PayloadAction<ITask>) => {
+          state.loading = false;
+          if (action.payload && action.payload._id) {
+            state.tasks.unshift(action.payload);
+            state.total += 1;
+          }
+        },
+      )
+      .addCase(
+        deleteTask.fulfilled,
+        (state: SuperAdminTaskState, action: PayloadAction<string>) => {
+          state.tasks = state.tasks.filter((t) => t._id !== action.payload);
+          state.total -= 1;
+        },
+      )
+      .addCase(
+        updateTask.fulfilled,
+        (state: SuperAdminTaskState, action: PayloadAction<ITask>) => {
+          const index = state.tasks.findIndex(
+            (t) => t._id === action.payload._id,
+          );
+          if (index !== -1) {
+            state.tasks[index] = action.payload;
+          }
+        },
+      )
+      .addCase(
+        reviewTask.fulfilled,
+        (state: SuperAdminTaskState, action: PayloadAction<ITask>) => {
+          const index = state.tasks.findIndex(
+            (t) => t._id === action.payload._id,
+          );
+          if (index !== -1) {
+            state.tasks[index] = action.payload;
+          }
+        },
+      )
 
       /* STEP 2: Generic Matchers (MUST BE LAST)
-      */
+       */
       .addMatcher(
-        (action): action is PayloadAction<string> => action.type.endsWith("/rejected"),
+        (action): action is PayloadAction<string> =>
+          action.type.endsWith("/rejected"),
         (state: SuperAdminTaskState, action: PayloadAction<string>) => {
           state.loading = false;
           state.error = action.payload || "An unexpected error occurred";
-        }
+        },
       );
   },
 });

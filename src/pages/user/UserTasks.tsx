@@ -18,7 +18,7 @@ import {
   updateTask,
   TaskStatus,
   clearTaskError,
-  Task,
+  type Task,
 } from "../../store/slices/taskSlice";
 
 type Timeframe = "yesterday" | "today" | "week" | "month" | "all";

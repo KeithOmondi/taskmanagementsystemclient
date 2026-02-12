@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom"; 
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { fetchMyTasks, TaskStatus, Task } from "../../store/slices/taskSlice";
+import { fetchMyTasks, TaskStatus, type Task } from "../../store/slices/taskSlice";
 
 /* =====================================
     INTERNAL COMPONENT: TaskCard
