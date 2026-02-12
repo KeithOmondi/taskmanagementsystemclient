@@ -1,37 +1,143 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
+import api from "../../api/axios";
 
-// 1. Define the shape of your state
-interface CategoryState {
-  items: any[]; // Replace 'any' with your actual Category type
+/* =====================================
+    INTERFACES
+===================================== */
+export interface Category {
+  _id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  color: string;
+  parentId: string | null;
+  isSystemDefined: boolean;
+  children?: Category[];
+}
+
+export interface CategoryState {
+  categories: Category[];
+  categoryTree: Category[];
   loading: boolean;
   error: string | null;
 }
 
-// 2. Define the initial state with the interface
 const initialState: CategoryState = {
-  items: [],
+  categories: [],
+  categoryTree: [],
   loading: false,
   error: null,
 };
 
-// 3. Create the slice
-// Note: We don't manually type 'const categorySlice: Slice<...>'
-// RTK infers the 'Draft' state automatically inside the reducers.
-export const categorySlice = createSlice({
-  name: 'categories',
-  initialState,
+/* =====================================
+    ASYNC THUNKS
+===================================== */
+
+export const fetchCategoryTree = createAsyncThunk<
+  Category[],
+  void,
+  { rejectValue: string }
+>("categories/fetchTree", async (_, { rejectWithValue }) => {
+  try {
+    const response = await api.get("/categories/tree");
+    return response.data.data;
+  } catch (err: any) {
+    return rejectWithValue(err.response?.data?.message || "Failed to fetch tree");
+  }
+});
+
+export const fetchAllCategories = createAsyncThunk<
+  Category[],
+  void,
+  { rejectValue: string }
+>("categories/fetchAll", async (_, { rejectWithValue }) => {
+  try {
+    const response = await api.get("/categories/get");
+    return response.data.data;
+  } catch (err: any) {
+    return rejectWithValue(err.response?.data?.message || "Failed to fetch categories");
+  }
+});
+
+export const createCategory = createAsyncThunk<
+  Category,
+  Partial<Category>,
+  { rejectValue: string }
+>("categories/create", async (categoryData, { rejectWithValue, dispatch }) => {
+  try {
+    const response = await api.post("/categories/category", categoryData);
+    dispatch(fetchCategoryTree());
+    return response.data.data;
+  } catch (err: any) {
+    return rejectWithValue(err.response?.data?.message || "Failed to create category");
+  }
+});
+
+export const deleteCategory = createAsyncThunk<
+  string,
+  string,
+  { rejectValue: string }
+>("categories/delete", async (id, { rejectWithValue, dispatch }) => {
+  try {
+    await api.delete(`/categories/delete/${id}`);
+    dispatch(fetchCategoryTree());
+    return id;
+  } catch (err: any) {
+    return rejectWithValue(err.response?.data?.message || "Failed to delete");
+  }
+});
+
+/* =====================================
+    SLICE
+===================================== */
+
+const categorySlice = createSlice({
+  name: "categories",
+  // 🟢 FIREWALL: Explicitly casting here prevents Immer internal types from leaking
+  initialState: initialState as CategoryState, 
   reducers: {
     clearCategoryError: (state) => {
-      // 'state' is automatically inferred as Draft<CategoryState>
       state.error = null;
     },
-    // Example of a reducer with a payload
-    setCategories: (state, action: PayloadAction<any[]>) => {
-      state.items = action.payload;
-    }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchCategoryTree.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchCategoryTree.fulfilled, (state, action: PayloadAction<Category[]>) => {
+        state.loading = false;
+        state.categoryTree = action.payload;
+      })
+      .addCase(fetchCategoryTree.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchAllCategories.fulfilled, (state, action: PayloadAction<Category[]>) => {
+        state.categories = action.payload;
+      })
+      .addCase(createCategory.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(createCategory.fulfilled, (state, action: PayloadAction<Category>) => {
+        state.loading = false;
+        state.categories.push(action.payload);
+      })
+      .addCase(createCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteCategory.fulfilled, (state, action: PayloadAction<string>) => {
+        state.categories = state.categories.filter((cat) => cat._id !== action.payload);
+      });
   },
 });
 
-// 4. Export actions and the reducer
-export const { clearCategoryError, setCategories } = categorySlice.actions;
+export const { clearCategoryError } = categorySlice.actions;
+// 🟢 The "export default" will now be clean of 'WritableNonArrayDraft'
 export default categorySlice.reducer;
