@@ -41,7 +41,7 @@ function App() {
         <div className="flex flex-col items-center gap-4">
           <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
           <div className="text-sm font-black text-emerald-900 uppercase tracking-[0.2em] animate-pulse">
-            Authenticating Urithi Session...
+            Authenticating  Session...
           </div>
         </div>
       </div>
