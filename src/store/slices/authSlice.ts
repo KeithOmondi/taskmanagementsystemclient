@@ -86,25 +86,32 @@ export const verifyOtpRequest = createAsyncThunk<
   }
 });
 
+
 /**
- * Refresh Session
+ * Refresh Session (queue-safe)
  */
 export const refreshSession = createAsyncThunk<
-  User, 
-  void, 
+  User,
+  void,
   { rejectValue: null }
 >("auth/refresh", async (_, { rejectWithValue }) => {
   try {
-    const { data } = await api.post("/auth/refresh"); 
+    // Use Axios instance to trigger the refresh flow
+    const { data } = await api.post("/auth/refresh");
+
+    // Map user
     const user: User = {
       ...data.user,
       name: data.user.name || data.user.pjNumber || data.user.role || "User",
     };
+
     return user;
   } catch (err: any) {
+    // Token refresh failed → session is dead
     return rejectWithValue(null);
   }
 });
+
 
 /**
  * Logout
