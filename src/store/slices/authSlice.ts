@@ -1,4 +1,8 @@
-import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createSlice,
+  createAsyncThunk,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
 import api from "../../api/axios";
 
 /* =====================================
@@ -8,7 +12,7 @@ import api from "../../api/axios";
 export interface User {
   id: string;
   role: string;
-  name: string; 
+  name: string;
   pjNumber?: string;
 }
 
@@ -38,8 +42,8 @@ const initialState: AuthState = {
  * Login / Request OTP
  */
 export const loginRequest = createAsyncThunk<
-  { message: string }, 
-  string, 
+  { message: string },
+  string,
   { rejectValue: string }
 >("auth/loginRequest", async (pjNumber, { rejectWithValue }) => {
   try {
@@ -54,15 +58,17 @@ export const loginRequest = createAsyncThunk<
  * Resend OTP
  */
 export const resendOtpRequest = createAsyncThunk<
-  { message: string }, 
-  string, 
+  { message: string },
+  string,
   { rejectValue: string }
 >("auth/resendOtp", async (pjNumber, { rejectWithValue }) => {
   try {
     const { data } = await api.post("/auth/resend-otp", { pjNumber });
     return data;
   } catch (err: any) {
-    return rejectWithValue(err.response?.data?.message || "Failed to resend OTP");
+    return rejectWithValue(
+      err.response?.data?.message || "Failed to resend OTP",
+    );
   }
 });
 
@@ -70,8 +76,8 @@ export const resendOtpRequest = createAsyncThunk<
  * Verify OTP
  */
 export const verifyOtpRequest = createAsyncThunk<
-  User, 
-  string, 
+  User,
+  string,
   { rejectValue: string }
 >("auth/verifyOtp", async (otp, { rejectWithValue }) => {
   try {
@@ -85,7 +91,6 @@ export const verifyOtpRequest = createAsyncThunk<
     return rejectWithValue(err.response?.data?.message || "Invalid OTP");
   }
 });
-
 
 /**
  * Refresh Session (queue-safe)
@@ -112,13 +117,12 @@ export const refreshSession = createAsyncThunk<
   }
 });
 
-
 /**
  * Logout
  */
 export const logoutRequest = createAsyncThunk<
-  void, 
-  void, 
+  void,
+  void,
   { rejectValue: string }
 >("auth/logout", async (_, { rejectWithValue }) => {
   try {
@@ -164,7 +168,7 @@ const authSlice = createSlice({
       })
       .addCase(loginRequest.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string || "Login failed";
+        state.error = (action.payload as string) || "Login failed";
       })
 
       // RESEND OTP
@@ -178,7 +182,7 @@ const authSlice = createSlice({
       })
       .addCase(resendOtpRequest.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string || "Failed to resend OTP";
+        state.error = (action.payload as string) || "Failed to resend OTP";
       })
 
       // VERIFY OTP
@@ -186,25 +190,31 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(verifyOtpRequest.fulfilled, (state, action: PayloadAction<User>) => {
-        state.loading = false;
-        state.user = action.payload;
-        state.otpSent = false;
-        state.message = null;
-      })
+      .addCase(
+        verifyOtpRequest.fulfilled,
+        (state, action: PayloadAction<User>) => {
+          state.loading = false;
+          state.user = action.payload;
+          state.otpSent = false;
+          state.message = null;
+        },
+      )
       .addCase(verifyOtpRequest.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as string || "Invalid OTP";
+        state.error = (action.payload as string) || "Invalid OTP";
       })
 
       // REFRESH
       .addCase(refreshSession.pending, (state) => {
         state.isCheckingAuth = true;
       })
-      .addCase(refreshSession.fulfilled, (state, action: PayloadAction<User>) => {
-        state.user = action.payload;
-        state.isCheckingAuth = false;
-      })
+      .addCase(
+        refreshSession.fulfilled,
+        (state, action: PayloadAction<User>) => {
+          state.user = action.payload;
+          state.isCheckingAuth = false;
+        },
+      )
       .addCase(refreshSession.rejected, (state) => {
         state.user = null;
         state.isCheckingAuth = false;
