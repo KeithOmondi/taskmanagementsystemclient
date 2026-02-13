@@ -82,37 +82,38 @@ export const verifyOtpRequest = createAsyncThunk<
 >("auth/verifyOtp", async (otp, { rejectWithValue }) => {
   try {
     const { data } = await api.post("/auth/verify-otp", { otp });
+
     const user: User = {
       ...data.user,
       name: data.user.name || data.user.pjNumber || data.user.role || "User",
     };
+
     return user;
   } catch (err: any) {
     return rejectWithValue(err.response?.data?.message || "Invalid OTP");
   }
 });
 
-// src/store/slices/authSlice.ts
-export const refreshSession = createAsyncThunk<User, void, { rejectValue: null }>(
-  "auth/refresh",
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await api.post("/auth/refresh", {}, { withCredentials: true });
 
-      const user: User = {
-        ...data.user,
-        name: data.user.name || data.user.pjNumber || data.user.role || "User",
-      };
+export const refreshSession = createAsyncThunk<
+  User,
+  void,
+  { rejectValue: null }
+>("auth/refresh", async (_, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post("/auth/refresh");
 
-      // Store new accessToken locally for Axios header
-      if (data.accessToken) localStorage.setItem("accessToken", data.accessToken);
+    const user: User = {
+      ...data.user,
+      name: data.user.name || data.user.pjNumber || data.user.role || "User",
+    };
 
-      return user;
-    } catch (err: any) {
-      return rejectWithValue(null); // session is invalid
-    }
-  },
-);
+    return user;
+  } catch {
+    return rejectWithValue(null);
+  }
+});
+
 
 
 /**
