@@ -32,13 +32,14 @@ function App() {
   const dispatch = useAppDispatch();
   const { user, isCheckingAuth } = useAppSelector((state) => state.auth);
 
-  useEffect(() => {
-    injectDispatch(dispatch); // 🔹 allows Axios to call forceLogout
-  }, [dispatch]);
 
-  useEffect(() => {
-    dispatch(refreshSession());
-  }, [dispatch]);
+useEffect(() => {
+  injectDispatch(dispatch); // 🔹 needed for Axios interceptors
+}, [dispatch]);
+
+useEffect(() => {
+  dispatch(refreshSession());
+}, [dispatch]);
 
   if (isCheckingAuth) {
     return (

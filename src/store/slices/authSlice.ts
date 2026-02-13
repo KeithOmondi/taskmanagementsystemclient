@@ -92,30 +92,28 @@ export const verifyOtpRequest = createAsyncThunk<
   }
 });
 
-/**
- * Refresh Session (queue-safe)
- */
-export const refreshSession = createAsyncThunk<
-  User,
-  void,
-  { rejectValue: null }
->("auth/refresh", async (_, { rejectWithValue }) => {
-  try {
-    // Use Axios instance to trigger the refresh flow
-    const { data } = await api.post("/auth/refresh");
+// src/store/slices/authSlice.ts
+export const refreshSession = createAsyncThunk<User, void, { rejectValue: null }>(
+  "auth/refresh",
+  async (_, { rejectWithValue }) => {
+    try {
+      const { data } = await api.post("/auth/refresh", {}, { withCredentials: true });
 
-    // Map user
-    const user: User = {
-      ...data.user,
-      name: data.user.name || data.user.pjNumber || data.user.role || "User",
-    };
+      const user: User = {
+        ...data.user,
+        name: data.user.name || data.user.pjNumber || data.user.role || "User",
+      };
 
-    return user;
-  } catch (err: any) {
-    // Token refresh failed → session is dead
-    return rejectWithValue(null);
-  }
-});
+      // Store new accessToken locally for Axios header
+      if (data.accessToken) localStorage.setItem("accessToken", data.accessToken);
+
+      return user;
+    } catch (err: any) {
+      return rejectWithValue(null); // session is invalid
+    }
+  },
+);
+
 
 /**
  * Logout
