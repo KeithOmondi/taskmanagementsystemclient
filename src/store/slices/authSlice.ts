@@ -123,13 +123,16 @@ export const logoutRequest = createAsyncThunk<
   void,
   void,
   { rejectValue: string }
->("auth/logout", async (_, { rejectWithValue }) => {
+>("auth/logout", async (_, { dispatch, rejectWithValue }) => {
   try {
     await api.post("/auth/logout");
-  } catch (err: any) {
+
+    dispatch(logout()); // 🔥 clear auth slice
+  } catch {
     return rejectWithValue("Logout failed");
   }
 });
+
 
 /* =====================================
     SLICE

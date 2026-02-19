@@ -27,6 +27,8 @@ import UserComplete from "./pages/user/UserComplete";
 import UserProfile from "./pages/user/UserProfile";
 import SuperAdminSubmitted from "./pages/superadmin/SuperAdminSubmitted";
 import { injectDispatch } from "./api/axios";
+import SuperAdminTask from "./pages/superadmin/SuperAdminTask";
+import SuperAdminCalendar from "./pages/superadmin/SuperAdminCalendar";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -78,7 +80,9 @@ useEffect(() => {
           <Route path="/super-admin" element={<SuperAdminLayout />}>
             <Route index element={<SuperAdminDashboard />} />
             <Route path="tasks" element={<SuperAdminTasks />} />
+            <Route path="task" element={<SuperAdminTask />} />
             <Route path="submitted" element={<SuperAdminSubmitted />} />
+            <Route path="calendar" element={<SuperAdminCalendar />} />
           </Route>
         </Route>
 

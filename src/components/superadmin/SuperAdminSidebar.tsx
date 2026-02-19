@@ -15,6 +15,8 @@ export const SuperAdminSidebar = () => {
   const links = [
   { name: "Dashboard", icon: LayoutDashboard, path: "/super-admin" },
   { name: "Assign Tasks", icon: LayoutDashboard, path: "/super-admin/tasks" },
+  { name: "Admin Tasks", icon: LayoutDashboard, path: "/super-admin/task" },
+  { name: "Calendar", icon: LayoutDashboard, path: "/super-admin/calendar" },
   { name: "Completed Tasks", icon: Users, path: "/super-admin/submitted" },
 ];
 
